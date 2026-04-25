@@ -1,0 +1,51 @@
+{
+  "name": "fitness-tracker-backend",
+  "version": "1.0.0",
+  "description": "AI-Powered Fitness Tracker SaaS Backend for Gym Trainers & Members",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "morgan": "^1.10.0",
+    "winston": "^3.11.0",
+    "express-validator": "^7.0.1",
+    "compression": "^1.7.4",
+    "openai": "^4.20.1",
+    "@anthropic-ai/sdk": "^0.20.1",
+    "@google/generative-ai": "^0.11.0",
+    "express-mongo-sanitize": "^2.2.0",
+    "hpp": "^0.2.3",
+    "joi": "^17.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.55.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "fitness",
+    "tracker",
+    "gym",
+    "ai",
+    "saas"
+  ],
+  "author": "Fitness Tracker Team",
+  "license": "MIT"
+}
