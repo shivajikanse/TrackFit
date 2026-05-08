@@ -81,14 +81,14 @@ const authLimiter = rateLimit({
 app.use("/api/", limiter);
 app.use("/api/auth", authLimiter);
 
-// ─── Parsing & Sanitization 
+// ─── Parsing & Sanitization
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(mongoSanitize()); // prevent NoSQL injection
 app.use(hpp()); // HTTP Parameter Pollution
 app.use(compression());
 
-// ─── Logging 
+// ─── Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 } else {
@@ -141,7 +141,6 @@ const StartServer = async () => {
       logger.info(
         ` Server running in ${process.env.NODE_ENV || "development"} mode on port ${PORT}`,
       );
-      logger.info(` API available at http://localhost:${PORT}/api`);
       logger.info(`  Health check: http://localhost:${PORT}/health`);
     });
   } catch (err) {
@@ -150,7 +149,6 @@ const StartServer = async () => {
   }
 };
 StartServer();
-
 
 // Graceful shutdown logic
 const gracefulShutdown = (signal) => {

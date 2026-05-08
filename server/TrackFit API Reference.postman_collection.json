@@ -1,0 +1,1329 @@
+{
+  "info": {
+    "_postman_id": "13eb0def-5f40-4452-bed8-d83915ba9c8c",
+    "name": "TrackFit API Reference",
+    "description": "Complete API documentation for TrackFit - AI-Powered Fitness Tracker Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38693531",
+    "_collection_link": "https://go.postman.co/collection/38693531-13eb0def-5f40-4452-bed8-d83915ba9c8c?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Member Auth",
+          "item": [
+            {
+              "name": "Member Register",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {\r",
+                      "  const data = pm.response.json().data;\r",
+                      "  pm.environment.set(\"memberToken\", data.accessToken);\r",
+                      "  pm.environment.set(\"memberRefreshToken\", data.refreshToken);\r",
+                      "  pm.environment.set(\"memberId\", data.user._id);\r",
+                      "  pm.environment.set(\"memberEmail\", data.user.email);\r",
+                      "\r",
+                      "  console.log(\"✅ Member Registered!\");\r",
+                      "  console.log(\"ID: \" + data.user._id);\r",
+                      "  console.log(\"Trainer ID: \" + pm.environment.get(\"trainerId\"));\r",
+                      "} else {\r",
+                      "  const error = pm.response.json();\r",
+                      "  console.log(\"❌ Error: \" + error.message);\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Member03\",\r\n  \"email\": \"member03@example.com\",\r\n  \"password\": \"SecurePassword123\",\r\n  \"role\": \"member\",\r\n  \"trainerId\": \"{{trainerId}}\"\r\n \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/auth/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Member Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {\r",
+                      "  const data = pm.response.json().data;\r",
+                      "  const role = data.user.role;\r",
+                      "\r",
+                      "    pm.environment.set(\"memberToken\", data.accessToken);\r",
+                      "    pm.environment.set(\"memberRefreshToken\", data.refreshToken);\r",
+                      "    console.log(\"✅ Member Logged In!\");\r",
+                      "\r",
+                      "  console.log(\"User: \" + data.user.name);\r",
+                      "  console.log(\"Role: \" + role);\r",
+                      "} else {\r",
+                      "  console.log(\"❌ Login Failed\");\r",
+                      "}"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"member01@example.com\",\r\n    \"password\": \"SecurePassword123\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/auth/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Trainer Auth",
+          "item": [
+            {
+              "name": "Register",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"SecurePassword123\",\n  \"role\": \"member\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/v1/auth/register",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Register a new user (trainer or member)"
+              },
+              "response": []
+            },
+            {
+              "name": "Login",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"SecurePassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/v1/auth/login",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Login user and get JWT token"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Refresh JWT token"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/auth/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get current user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"profile\": {\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"weight\": 75,\n    \"height\": 180,\n    \"fitnessGoal\": \"muscle_gain\",\n    \"activityLevel\": \"moderate\",\n    \"allergies\": [\"peanuts\"],\n    \"medicalConditions\": []\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/auth/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Update user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/auth/logout",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workout Plans",
+      "item": [
+        {
+          "name": "Get My Workout Plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/my-plan",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "my-plan"
+              ]
+            },
+            "description": "Get current member's workout plan"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workout Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/{{workoutPlanId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "{{workoutPlanId}}"
+              ]
+            },
+            "description": "Get specific workout plan details"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Workout to Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Beginner Full Body Workout\",\n  \"description\": \"4-week beginner friendly program\",\n  \"schedule\": [\n    {\n      \"day\": \"Monday\",\n      \"focus\": \"Upper Body\",\n      \"difficulty\": \"beginner\",\n      \"estimatedDuration\": 45,\n      \"exercises\": [\n        {\n          \"name\": \"Push-ups\",\n          \"sets\": 3,\n          \"reps\": \"10-12\",\n          \"rest\": \"60 seconds\",\n          \"targetMuscles\": [\"chest\", \"triceps\"],\n          \"equipment\": \"bodyweight\",\n          \"notes\": \"Keep your body straight\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/assign/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "assign",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Assign workout plan to member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "AI Generate Workout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/ai-generate/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "ai-generate",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Generate AI-powered workout plan for member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Workouts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/member/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "member",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get all workouts for a specific member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workout Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Workout Plan\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/{{workoutPlanId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "{{workoutPlanId}}"
+              ]
+            },
+            "description": "Update workout plan (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workout Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/workout/{{workoutPlanId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workout",
+                "{{workoutPlanId}}"
+              ]
+            },
+            "description": "Delete workout plan (Trainer only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Diet Plans",
+      "item": [
+        {
+          "name": "Get My Diet Plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/my-plan",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "my-plan"
+              ]
+            },
+            "description": "Get current member's diet plan"
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Diet to Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"High Protein Diet\",\n  \"description\": \"7-day meal plan for muscle gain\",\n  \"targetCalories\": 2500,\n  \"targetProtein\": 200,\n  \"targetCarbs\": 250,\n  \"targetFats\": 83\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/assign/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "assign",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Assign diet plan to member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "AI Generate Diet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/ai-generate/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "ai-generate",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Generate AI-powered diet plan for member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Diets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/member/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "member",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get all diet plans for a specific member (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Diet Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Diet Plan\",\n  \"targetCalories\": 2000\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/{{dietPlanId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "{{dietPlanId}}"
+              ]
+            },
+            "description": "Update diet plan (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Diet Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/diet/{{dietPlanId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "diet",
+                "{{dietPlanId}}"
+              ]
+            },
+            "description": "Delete diet plan (Trainer only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Progress Tracking",
+      "item": [
+        {
+          "name": "Log Progress",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-04-25\",\n  \"weight\": 75,\n  \"workoutCompleted\": true,\n  \"caloriesConsumed\": 2200,\n  \"energyLevel\": 8,\n  \"mood\": \"great\",\n  \"sleepHours\": 8,\n  \"notes\": \"Great workout session!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/log",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "log"
+              ]
+            },
+            "description": "Log daily progress (Member only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Progress History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/history",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "history"
+              ]
+            },
+            "description": "Get progress history"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Progress History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/history/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "history",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get specific member's progress history (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Progress Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/analytics",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "analytics"
+              ]
+            },
+            "description": "Get progress analytics and statistics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Progress Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/analytics/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "analytics",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get specific member's progress analytics (Trainer only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Trainer Notes",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trainerNotes\": \"Good progress! Keep it up!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/progress/{{progressId}}/trainer-notes",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "progress",
+                "{{progressId}}",
+                "trainer-notes"
+              ]
+            },
+            "description": "Add trainer notes to progress log (Trainer only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Member Dashboard (Member Routes)",
+      "item": [
+        {
+          "name": "Get AI Feedback",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/ai-feedback",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "ai-feedback"
+              ]
+            },
+            "description": "Get AI-generated feedback based on progress"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Workout Note\",\n  \"content\": \"Felt great during today's session\",\n  \"category\": \"workout\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/notes",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "notes"
+              ]
+            },
+            "description": "Create a personal note"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/notes",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "notes"
+              ]
+            },
+            "description": "Get all notes"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Note",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Note\",\n  \"content\": \"Updated content\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/notes/{{noteId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "notes",
+                "{{noteId}}"
+              ]
+            },
+            "description": "Update a note"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Note",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/notes/{{noteId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "notes",
+                "{{noteId}}"
+              ]
+            },
+            "description": "Delete a note"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Inbox (Broadcasts)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/member/inbox",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "member",
+                "inbox"
+              ]
+            },
+            "description": "Get inbox messages from trainer broadcasts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trainer Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/dashboard",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "dashboard"
+              ]
+            },
+            "description": "Get trainer dashboard with stats and overview"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Member",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"member@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/member",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "member"
+              ]
+            },
+            "description": "Add a member to trainer's team"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Members",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/members",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "members"
+              ]
+            },
+            "description": "Get all trainer's members"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Member Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/members/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "members",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Get specific member details"
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/members/{{memberId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "members",
+                "{{memberId}}"
+              ]
+            },
+            "description": "Remove member from trainer's team"
+          },
+          "response": []
+        },
+        {
+          "name": "Send Broadcast",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Important Announcement\",\n  \"message\": \"New gym hours starting next week\",\n  \"sentToAll\": true,\n  \"recipients\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/broadcast",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "broadcast"
+              ]
+            },
+            "description": "Send broadcast message to members"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Broadcasts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/v1/trainer/broadcasts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trainer",
+                "broadcasts"
+              ]
+            },
+            "description": "Get all sent broadcasts"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "memberId",
+      "value": ""
+    },
+    {
+      "key": "workoutPlanId",
+      "value": ""
+    },
+    {
+      "key": "dietPlanId",
+      "value": ""
+    },
+    {
+      "key": "progressId",
+      "value": ""
+    },
+    {
+      "key": "noteId",
+      "value": ""
+    }
+  ]
+}
