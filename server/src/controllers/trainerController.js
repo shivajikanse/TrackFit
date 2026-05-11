@@ -1,10 +1,14 @@
-const User = require('../models/User');
-const Broadcast = require('../models/Broadcast');
-const WorkoutPlan = require('../models/WorkoutPlan');
-const DietPlan = require('../models/DietPlan');
-const Progress = require('../models/Progress');
-const { successResponse, errorResponse, paginatedResponse } = require('../utils/apiResponse');
-const logger = require('../utils/logger');
+const User = require("../models/User");
+const Broadcast = require("../models/Broadcast");
+const WorkoutPlan = require("../models/WorkoutPlan");
+const DietPlan = require("../models/DietPlan");
+const Progress = require("../models/Progress");
+const {
+  successResponse,
+  errorResponse,
+  paginatedResponse,
+} = require("../utils/apiResponse");
+const logger = require("../utils/logger");
 
 /**
  * @desc    Add a member to trainer
@@ -15,20 +19,24 @@ exports.addMember = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const member = await User.findOne({ email, role: 'member' });
+    const member = await User.findOne({ email, role: "member" });
     if (!member) {
-      return errorResponse(res, 'No member found with this email.', 404);
+      return errorResponse(res, "No member found with this email.", 404);
     }
 
     if (member.trainer) {
-      return errorResponse(res, 'This member is already assigned to a trainer.', 400);
+      return errorResponse(
+        res,
+        "This member is already assigned to a trainer.",
+        400,
+      );
     }
 
     member.trainer = req.user._id;
     await member.save({ validateBeforeSave: false });
 
     logger.info(`Trainer ${req.user.email} added member ${email}`);
-    successResponse(res, member, 'Member added successfully.');
+    successResponse(res, member, "Member added successfully.");
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
@@ -44,32 +52,41 @@ exports.getMembers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
-    const search = req.query.search || '';
+    const search = req.query.search || "";
 
     const query = {
       trainer: req.user._id,
-      role: 'member',
+      role: "member",
       isActive: true,
     };
 
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
       ];
     }
 
     const [members, total] = await Promise.all([
-      User.find(query).select('-password -refreshToken').skip(skip).limit(limit).sort({ createdAt: -1 }),
+      User.find(query)
+        .select("-password -refreshToken")
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 }),
       User.countDocuments(query),
     ]);
 
-    paginatedResponse(res, members, {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    }, 'Members fetched.');
+    paginatedResponse(
+      res,
+      members,
+      {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+      "Members fetched.",
+    );
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
@@ -86,11 +103,11 @@ exports.getMemberDetails = async (req, res) => {
     const member = await User.findOne({
       _id: memberId,
       trainer: req.user._id,
-      role: 'member',
-    }).select('-password -refreshToken');
+      role: "member",
+    }).select("-password -refreshToken");
 
     if (!member) {
-      return errorResponse(res, 'Member not found.', 404);
+      return errorResponse(res, "Member not found.", 404);
     }
 
     const [activeWorkout, activeDiet, recentProgress] = await Promise.all([
@@ -99,12 +116,16 @@ exports.getMemberDetails = async (req, res) => {
       Progress.find({ member: memberId }).sort({ date: -1 }).limit(7),
     ]);
 
-    successResponse(res, {
-      member,
-      activeWorkout,
-      activeDiet,
-      recentProgress,
-    }, 'Member details fetched.');
+    successResponse(
+      res,
+      {
+        member,
+        activeWorkout,
+        activeDiet,
+        recentProgress,
+      },
+      "Member details fetched.",
+    );
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
@@ -120,12 +141,12 @@ exports.removeMember = async (req, res) => {
     const member = await User.findOneAndUpdate(
       { _id: req.params.memberId, trainer: req.user._id },
       { trainer: null },
-      { new: true }
+      { new: true },
     );
     if (!member) {
-      return errorResponse(res, 'Member not found.', 404);
+      return errorResponse(res, "Member not found.", 404);
     }
-    successResponse(res, null, 'Member removed from your list.');
+    successResponse(res, null, "Member removed from your list.");
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
@@ -149,9 +170,9 @@ exports.broadcast = async (req, res) => {
     } else {
       const members = await User.find({
         trainer: req.user._id,
-        role: 'member',
+        role: "member",
         isActive: true,
-      }).select('_id');
+      }).select("_id");
       recipients = members.map((m) => m._id);
     }
 
@@ -159,30 +180,68 @@ exports.broadcast = async (req, res) => {
       trainer: req.user._id,
       title,
       message,
-      category: category || 'announcement',
+      category: category || "announcement",
       recipients,
       sentToAll,
     });
 
-    logger.info(`Trainer ${req.user.email} broadcast to ${recipients.length} members`);
-    successResponse(res, broadcastDoc, `Broadcast sent to ${recipients.length} members.`, 201);
+    logger.info(
+      `Trainer ${req.user.email} broadcast to ${recipients.length} members`,
+    );
+    successResponse(
+      res,
+      broadcastDoc,
+      `Broadcast sent to ${recipients.length} members.`,
+      201,
+    );
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
 };
 
 /**
- * @desc    Get all broadcasts by trainer
- * @route   GET /api/trainer/broadcasts
+ * @desc    Get all broadcasts by trainer (formatted for frontend)
+ * @route   GET /api/trainer/broadcasts or /api/messages/sent
  * @access  Trainer
  */
 exports.getBroadcasts = async (req, res) => {
   try {
-    const broadcasts = await Broadcast.find({ trainer: req.user._id })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .populate('recipients', 'name email');
-    successResponse(res, broadcasts, 'Broadcasts fetched.');
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const [broadcasts, total] = await Promise.all([
+      Broadcast.find({ trainer: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("recipients", "name email"),
+      Broadcast.countDocuments({ trainer: req.user._id }),
+    ]);
+
+    const formatted = broadcasts.map((b) => ({
+      _id: b._id,
+      type: b.sentToAll ? "broadcast" : "selected",
+      message: b.message,
+      subject: b.title,
+      sentAt: b.createdAt,
+      readCount: b.readBy.length,
+      recipientCount: b.recipients.length,
+    }));
+
+    // Support both response formats
+    const { paginatedResponse } = require("../utils/apiResponse");
+    paginatedResponse(
+      res,
+      formatted,
+      {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+      "Broadcasts fetched.",
+    );
   } catch (error) {
     errorResponse(res, error.message, 500);
   }
@@ -196,23 +255,31 @@ exports.getBroadcasts = async (req, res) => {
 exports.getDashboard = async (req, res) => {
   try {
     const [totalMembers, activeWorkouts, activeDiets] = await Promise.all([
-      User.countDocuments({ trainer: req.user._id, role: 'member', isActive: true }),
+      User.countDocuments({
+        trainer: req.user._id,
+        role: "member",
+        isActive: true,
+      }),
       WorkoutPlan.countDocuments({ assignedBy: req.user._id, isActive: true }),
       DietPlan.countDocuments({ assignedBy: req.user._id, isActive: true }),
     ]);
 
     const recentMembers = await User.find({
       trainer: req.user._id,
-      role: 'member',
+      role: "member",
     })
-      .select('name email profile.fitnessGoal createdAt')
+      .select("name email profile.fitnessGoal createdAt")
       .sort({ createdAt: -1 })
       .limit(5);
 
-    successResponse(res, {
-      stats: { totalMembers, activeWorkouts, activeDiets },
-      recentMembers,
-    }, 'Dashboard data fetched.');
+    successResponse(
+      res,
+      {
+        stats: { totalMembers, activeWorkouts, activeDiets },
+        recentMembers,
+      },
+      "Dashboard data fetched.",
+    );
   } catch (error) {
     errorResponse(res, error.message, 500);
   }

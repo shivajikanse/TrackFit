@@ -13,6 +13,7 @@ export default function Register() {
     email: "",
     password: "",
     role: "member",
+    trainerId: "",
   });
   const [loading, setLoading] = useState(false);
   const { setAuth } = useAuthStore();
@@ -30,6 +31,13 @@ export default function Register() {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    // Validate trainer ID for members
+    if (form.role === "member" && !form.trainerId.trim()) {
+      toast.error("Trainer ID is required for members");
+      return;
+    }
+
     setLoading(true);
     try {
       console.log("📤 Sending register request:", form);
@@ -142,6 +150,21 @@ export default function Register() {
             minLength={8}
             required
           />
+
+          {form.role === "member" && (
+            <Input
+              label="Trainer ID"
+              type="text"
+              value={form.trainerId}
+              onChange={set("trainerId")}
+              placeholder="Ask your trainer for their ID (e.g., TR-ABC123)"
+              required
+              style={{
+                borderColor: "rgba(255,60,47,0.3)",
+                background: "rgba(255,60,47,0.05)",
+              }}
+            />
+          )}
 
           <button
             type="submit"

@@ -8,6 +8,7 @@ import Register from "./pages/public/Register";
 
 // Trainer pages
 import TrainerDashboard from "./pages/trainer/TrainerDashboard";
+import TrainerProfile from "./pages/trainer/TrainerProfile";
 import MembersList from "./pages/trainer/MembersList";
 import MemberDetail from "./pages/trainer/MemberDetail";
 import AssignPlans from "./pages/trainer/AssignPlans";
@@ -33,12 +34,12 @@ export default function App() {
   const { isAuthenticated, user } = useAuthStore();
 
   // DEBUG: Log auth state on every render
-  console.log("🔍 App Render - Auth State:", {
-    isAuthenticated,
-    user: user?.email,
-    role: user?.role,
-    token: !!useAuthStore.getState().token,
-  });
+  // console.log("🔍 App Render - Auth State:", {
+  //   isAuthenticated,
+  //   user: user?.email,
+  //   role: user?.role,
+  //   token: !!useAuthStore.getState().token,
+  // });
 
   return (
     <Routes>
@@ -50,10 +51,6 @@ export default function App() {
           if (isAuthenticated) {
             const redirectPath =
               user?.role === "trainer" ? "/trainer" : "/member";
-            console.log("🔴 REDIRECTING FROM /login → " + redirectPath, {
-              reason: "isAuthenticated=true",
-              user,
-            });
             return <Navigate to={redirectPath} />;
           }
           return <Login />;
@@ -63,10 +60,6 @@ export default function App() {
         path="/register"
         element={(() => {
           if (isAuthenticated) {
-            console.log("🔴 REDIRECTING FROM /register → /", {
-              reason: "isAuthenticated=true",
-              user,
-            });
             return <Navigate to="/" />;
           }
           return <Register />;
@@ -83,6 +76,7 @@ export default function App() {
         }
       >
         <Route index element={<TrainerDashboard />} />
+        <Route path="profile" element={<TrainerProfile />} />
         <Route path="members" element={<MembersList />} />
         <Route path="members/:id" element={<MemberDetail />} />
         <Route

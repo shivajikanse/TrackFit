@@ -8,6 +8,8 @@ import {
   Send,
   ChevronRight,
   Activity,
+  Copy,
+  Check,
 } from "lucide-react";
 import {
   AreaChart,
@@ -75,6 +77,7 @@ const mockMembers = [
 export default function TrainerDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -88,6 +91,14 @@ export default function TrainerDashboard() {
       .catch(() => setStats(mockStats))
       .finally(() => setLoading(false));
   }, []);
+
+  const copyTrainerId = () => {
+    if (user?.trainerId) {
+      navigator.clipboard.writeText(user.trainerId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const s = stats || mockStats;
 
@@ -113,6 +124,53 @@ export default function TrainerDashboard() {
           COACH {(user?.name || "TRAINER").toUpperCase()}
         </motion.h1>
       </div>
+
+      {/* Trainer ID Card */}
+      {user?.trainerId && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8 p-5 rounded flex items-center justify-between"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,60,47,0.1) 0%, rgba(255,60,47,0.05) 100%)",
+            border: "1px solid rgba(255,60,47,0.25)",
+          }}
+        >
+          <div>
+            <p
+              className="font-heading text-xs tracking-widest uppercase mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Your Trainer ID
+            </p>
+            <p className="font-heading text-lg font-semibold text-white">
+              {user.trainerId}
+            </p>
+            <p
+              className="text-xs mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Share this ID with members to join your training program
+            </p>
+          </div>
+          <button
+            onClick={copyTrainerId}
+            className="ml-4 flex-shrink-0 p-3 rounded transition-all"
+            style={{
+              background: copied
+                ? "rgba(76,175,80,0.15)"
+                : "rgba(255,60,47,0.15)",
+              border: `1px solid ${copied ? "rgba(76,175,80,0.3)" : "rgba(255,60,47,0.3)"}`,
+              color: copied ? "#4CAF50" : "var(--accent)",
+            }}
+            title="Copy Trainer ID"
+          >
+            {copied ? <Check size={20} /> : <Copy size={20} />}
+          </button>
+        </motion.div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

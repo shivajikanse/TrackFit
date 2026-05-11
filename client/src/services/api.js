@@ -44,7 +44,7 @@ api.interceptors.response.use(
 
     if (status === 401) {
       console.log(
-        "🔴 401 Unauthorized - clearing auth and redirecting to login",
+        " 401 Unauthorized - clearing auth and redirecting to login",
       );
       localStorage.removeItem("trackfit-auth");
       // Only redirect if not already on login page to prevent loops

@@ -22,6 +22,7 @@ const workoutRoutes = require("./routes/workout");
 const dietRoutes = require("./routes/diet");
 const progressRoutes = require("./routes/progress");
 const memberRoutes = require("./routes/member");
+const messageRoutes = require("./routes/messages");
 
 const app = express();
 
@@ -119,6 +120,7 @@ app.use(`/api/workout`, workoutRoutes);
 app.use(`/api/diet`, dietRoutes);
 app.use(`/api/progress`, progressRoutes);
 app.use(`/api/member`, memberRoutes);
+app.use(`/api/messages`, messageRoutes);
 
 // Legacy routes (without version prefix) for backward compatibility
 app.use("/api/auth", authRoutes);
@@ -127,6 +129,7 @@ app.use("/api/workout", workoutRoutes);
 app.use("/api/diet", dietRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/member", memberRoutes);
+app.use("/api/messages", messageRoutes);
 
 // ─── 404 & Error Handler ─────────────────────────────────────────────────────
 app.use(notFound);

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Send, Radio, Users, Clock } from "lucide-react";
+import { Send, Radio, Users, Clock, Copy, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { trainerService } from "../../services";
+import { useAuthStore } from "../../store";
 import {
   PageWrapper,
   SectionHeader,
@@ -41,6 +42,8 @@ export default function Broadcast() {
   const [mode, setMode] = useState("broadcast"); // broadcast | selected
   const [sending, setSending] = useState(false);
   const [sentMessages, setSentMessages] = useState([]);
+  const [copied, setCopied] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     trainerService
@@ -64,7 +67,14 @@ export default function Broadcast() {
 
     trainerService
       .getSentMessages()
-      .then(({ data }) => setSentMessages(data.messages || data))
+      .then(({ data }) => {
+        const messagesList = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.messages)
+            ? data.messages
+            : [];
+        setSentMessages(messagesList);
+      })
       .catch(() => setSentMessages(mockSent));
   }, []);
 
@@ -73,17 +83,32 @@ export default function Broadcast() {
       s.includes(id) ? s.filter((x) => x !== id) : [...s, id],
     );
 
+  const copyTrainerId = () => {
+    if (user?.trainerId) {
+      navigator.clipboard.writeText(user.trainerId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const send = async () => {
     if (!message.trim()) return toast.error("Write a message first");
     if (mode === "selected" && selected.length === 0)
       return toast.error("Select at least one member");
     setSending(true);
     try {
-      if (mode === "broadcast") {
-        await trainerService.broadcast({ message });
-      } else {
-        await trainerService.sendToSelected({ message, memberIds: selected });
+      const payload = {
+        title: "Message",
+        message: message,
+        category: "announcement",
+      };
+
+      if (mode === "selected") {
+        payload.recipientIds = selected;
       }
+
+      await trainerService.broadcast(payload);
+
       const newMsg = {
         _id: Date.now().toString(),
         type: mode,
@@ -112,6 +137,47 @@ export default function Broadcast() {
         title="Broadcast"
         sub="Send messages to all or selected members"
       />
+
+      {/* Trainer ID Card */}
+      {user?.trainerId && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6 p-4 rounded flex items-center justify-between"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,60,47,0.1) 0%, rgba(255,60,47,0.05) 100%)",
+            border: "1px solid rgba(255,60,47,0.25)",
+          }}
+        >
+          <div className="flex-1">
+            <p
+              className="font-heading text-xs tracking-widest uppercase mb-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Share Your Trainer ID
+            </p>
+            <p className="font-heading text-base font-semibold text-white">
+              {user.trainerId}
+            </p>
+          </div>
+          <button
+            onClick={copyTrainerId}
+            className="ml-4 flex-shrink-0 p-2 rounded transition-all"
+            style={{
+              background: copied
+                ? "rgba(76,175,80,0.15)"
+                : "rgba(255,60,47,0.15)",
+              border: `1px solid ${copied ? "rgba(76,175,80,0.3)" : "rgba(255,60,47,0.3)"}`,
+              color: copied ? "#4CAF50" : "var(--accent)",
+            }}
+            title="Copy Trainer ID"
+          >
+            {copied ? <Check size={18} /> : <Copy size={18} />}
+          </button>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Compose */}

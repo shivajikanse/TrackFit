@@ -15,40 +15,40 @@ import {
   SkeletonList,
 } from "../../components/ui";
 
-const mockMembers = [
-  {
-    _id: "1",
-    name: "Alex Johnson",
-    email: "alex@gym.com",
-    goal: "Weight Loss",
-    status: "active",
-    joinedAt: "2025-01-10",
-  },
-  {
-    _id: "2",
-    name: "Sarah Chen",
-    email: "sarah@gym.com",
-    goal: "Muscle Gain",
-    status: "active",
-    joinedAt: "2025-02-15",
-  },
-  {
-    _id: "3",
-    name: "Marcus Davis",
-    email: "marcus@gym.com",
-    goal: "Endurance",
-    status: "active",
-    joinedAt: "2025-03-02",
-  },
-  {
-    _id: "4",
-    name: "Emma Wilson",
-    email: "emma@gym.com",
-    goal: "Toning",
-    status: "pending",
-    joinedAt: "2025-04-01",
-  },
-];
+// const mockMembers = [
+//   {
+//     _id: "1",
+//     name: "Alex Johnson",
+//     email: "alex@gym.com",
+//     goal: "Weight Loss",
+//     status: "active",
+//     joinedAt: "2025-01-10",
+//   },
+//   {
+//     _id: "2",
+//     name: "Sarah Chen",
+//     email: "sarah@gym.com",
+//     goal: "Muscle Gain",
+//     status: "active",
+//     joinedAt: "2025-02-15",
+//   },
+//   {
+//     _id: "3",
+//     name: "Marcus Davis",
+//     email: "marcus@gym.com",
+//     goal: "Endurance",
+//     status: "active",
+//     joinedAt: "2025-03-02",
+//   },
+//   {
+//     _id: "4",
+//     name: "Emma Wilson",
+//     email: "emma@gym.com",
+//     goal: "Toning",
+//     status: "pending",
+//     joinedAt: "2025-04-01",
+//   },
+// ];
 
 export default function MembersList() {
   const [members, setMembers] = useState([]);

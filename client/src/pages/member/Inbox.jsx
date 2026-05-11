@@ -204,12 +204,8 @@ export default function Inbox() {
     memberService
       .getInbox()
       .then(({ data }) => {
-        // Backend returns: { success, message, data: [...messages array...] }
-        const messagesList = Array.isArray(data?.data)
-          ? data.data
-          : Array.isArray(data)
-            ? data
-            : [];
+        // Backend returns: { success, message, data: [...messages array...], pagination }
+        const messagesList = Array.isArray(data?.data) ? data.data : [];
         setMessages(messagesList);
       })
       .catch(() => setMessages(mockMessages))
