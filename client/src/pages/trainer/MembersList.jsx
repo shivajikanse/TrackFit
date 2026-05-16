@@ -15,71 +15,40 @@ import {
   SkeletonList,
 } from "../../components/ui";
 
-// const mockMembers = [
-//   {
-//     _id: "1",
-//     name: "Alex Johnson",
-//     email: "alex@gym.com",
-//     goal: "Weight Loss",
-//     status: "active",
-//     joinedAt: "2025-01-10",
-//   },
-//   {
-//     _id: "2",
-//     name: "Sarah Chen",
-//     email: "sarah@gym.com",
-//     goal: "Muscle Gain",
-//     status: "active",
-//     joinedAt: "2025-02-15",
-//   },
-//   {
-//     _id: "3",
-//     name: "Marcus Davis",
-//     email: "marcus@gym.com",
-//     goal: "Endurance",
-//     status: "active",
-//     joinedAt: "2025-03-02",
-//   },
-//   {
-//     _id: "4",
-//     name: "Emma Wilson",
-//     email: "emma@gym.com",
-//     goal: "Toning",
-//     status: "pending",
-//     joinedAt: "2025-04-01",
-//   },
-// ];
-
 export default function MembersList() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [addModal, setAddModal] = useState(false);
   const [newMember, setNewMember] = useState({
-    name: "",
     email: "",
-    password: "",
-    goal: "weight_loss",
   });
   const [adding, setAdding] = useState(false);
 
+  // Direct API call to test
   useEffect(() => {
-    trainerService
-      .getMembers()
-      .then(({ data }) => {
-        // Backend returns: { success, message, data: [...members...], pagination }
-        const membersList = Array.isArray(data?.data)
-          ? data.data
-          : Array.isArray(data)
-            ? data
-            : [];
-        setMembers(membersList);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch members:", err);
-        setMembers(mockMembers);
-      })
-      .finally(() => setLoading(false));
+    const fetchMembers = async () => {
+      try {
+        const response = await trainerService.getMembers();
+        const responseData = response?.data;
+
+        if (responseData?.success && Array.isArray(responseData?.data)) {
+          setMembers(responseData.data);
+          setError(null);
+        } else {
+          setMembers([]);
+          setError("Failed to load members");
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || "Failed to load members");
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
   }, []);
 
   const filtered =
@@ -95,12 +64,20 @@ export default function MembersList() {
     e.preventDefault();
     setAdding(true);
     try {
-      const { data } = await trainerService.addMember(newMember);
-      setMembers((prev) => [...prev, data.member || data]);
-      setAddModal(false);
-      toast.success("Member added successfully!");
-    } catch {
-      toast.error("Failed to add member");
+      const response = await trainerService.addMember(newMember);
+      // Backend returns: { success: true, data: {...member}, message: "..." }
+      const memberData = response?.data?.data;
+      if (memberData) {
+        setMembers((prev) => [...prev, memberData]);
+        setAddModal(false);
+        setNewMember({ email: "" });
+        toast.success("Member added successfully!");
+      } else {
+        toast.error("Failed to add member - invalid response");
+      }
+    } catch (error) {
+      console.error("[MembersList] Add member error:", error);
+      toast.error(error?.response?.data?.message || "Failed to add member");
     } finally {
       setAdding(false);
     }
@@ -132,6 +109,20 @@ export default function MembersList() {
           </button>
         }
       />
+
+      {/* Error Banner */}
+      {error && (
+        <div
+          className="mb-6 p-4 rounded text-sm"
+          style={{
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgb(239, 68, 68)",
+            color: "rgb(239, 68, 68)",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative mb-6">
@@ -255,54 +246,36 @@ export default function MembersList() {
       <Modal
         open={addModal}
         onClose={() => setAddModal(false)}
-        title="Add New Member"
+        title="Assign Member to Your Roster"
       >
         <form onSubmit={handleAdd} className="space-y-4">
+          <div
+            className="p-3 rounded text-sm"
+            style={{
+              background: "rgba(59, 130, 246, 0.1)",
+              border: "1px solid rgb(59, 130, 246)",
+              color: "rgb(59, 130, 246)",
+            }}
+          >
+            Enter the email of an existing member to add them to your roster
+          </div>
           <Input
-            label="Full Name"
-            value={newMember.name}
-            onChange={(e) =>
-              setNewMember((p) => ({ ...p, name: e.target.value }))
-            }
-            placeholder="John Doe"
-            required
-          />
-          <Input
-            label="Email"
+            label="Member Email"
             type="email"
             value={newMember.email}
             onChange={(e) =>
               setNewMember((p) => ({ ...p, email: e.target.value }))
             }
-            placeholder="john@email.com"
+            placeholder="member@email.com"
             required
           />
-          <Input
-            label="Temp Password"
-            type="password"
-            value={newMember.password}
-            onChange={(e) =>
-              setNewMember((p) => ({ ...p, password: e.target.value }))
-            }
-            placeholder="••••••••"
-            required
-          />
-          <Select
-            label="Fitness Goal"
-            value={newMember.goal}
-            onChange={(e) =>
-              setNewMember((p) => ({ ...p, goal: e.target.value }))
-            }
-          >
-            <option value="weight_loss">Weight Loss</option>
-            <option value="muscle_gain">Muscle Gain</option>
-            <option value="endurance">Endurance</option>
-            <option value="toning">Toning</option>
-          </Select>
           <div className="flex gap-3 pt-2">
             <button
               type="button"
-              onClick={() => setAddModal(false)}
+              onClick={() => {
+                setAddModal(false);
+                setNewMember({ email: "" });
+              }}
               className="btn-ghost flex-1"
               style={{ borderRadius: 0 }}
             >

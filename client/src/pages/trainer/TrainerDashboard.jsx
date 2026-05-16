@@ -28,68 +28,52 @@ import {
 } from "../../components/ui";
 import { useAuthStore } from "../../store";
 
-const mockStats = {
-  totalMembers: 24,
-  activePlans: 18,
-  broadcastsSent: 7,
-  avgProgress: 78,
-};
-const mockActivity = [
-  { day: "Mon", sessions: 12 },
-  { day: "Tue", sessions: 19 },
-  { day: "Wed", sessions: 15 },
-  { day: "Thu", sessions: 22 },
-  { day: "Fri", sessions: 28 },
-  { day: "Sat", sessions: 20 },
-  { day: "Sun", sessions: 14 },
-];
-const mockMembers = [
-  {
-    _id: "1",
-    name: "Alex Johnson",
-    goal: "Weight Loss",
-    progress: 82,
-    status: "active",
-  },
-  {
-    _id: "2",
-    name: "Sarah Chen",
-    goal: "Muscle Gain",
-    progress: 67,
-    status: "active",
-  },
-  {
-    _id: "3",
-    name: "Marcus Davis",
-    goal: "Endurance",
-    progress: 91,
-    status: "active",
-  },
-  {
-    _id: "4",
-    name: "Emma Wilson",
-    goal: "Toning",
-    progress: 45,
-    status: "pending",
-  },
-];
-
 export default function TrainerDashboard() {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    activePlans: 0,
+    broadcastsSent: 0,
+    avgProgress: 0,
+  });
+  const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const { user } = useAuthStore();
 
+  // Fetch dashboard stats only on mount
   useEffect(() => {
-    trainerService
-      .getDashboard()
-      .then(({ data }) => {
-        // Backend returns: { success, message, data: {...stats...} }
-        const statsData = data?.data || data;
-        setStats(statsData);
-      })
-      .catch(() => setStats(mockStats))
-      .finally(() => setLoading(false));
+    const fetchDashboard = async () => {
+      try {
+        const response = await trainerService.getDashboard();
+        const responseData = response?.data;
+
+        if (responseData?.success) {
+          const dashboardData = responseData.data;
+          const backendStats = dashboardData?.stats || {};
+
+          const newStats = {
+            totalMembers: backendStats.totalMembers || 0,
+            activePlans:
+              (backendStats.activeWorkouts || 0) +
+              (backendStats.activeDiets || 0),
+            broadcastsSent: backendStats.broadcastsSent || 0,
+            avgProgress: backendStats.avgProgress || 0,
+          };
+
+          setStats(newStats);
+          setError(null);
+        } else {
+          setError(responseData?.message || "Failed to load dashboard");
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || "Failed to load dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
   }, []);
 
   const copyTrainerId = () => {
@@ -100,10 +84,32 @@ export default function TrainerDashboard() {
     }
   };
 
-  const s = stats || mockStats;
-
   return (
     <PageWrapper>
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 rounded"
+          style={{
+            background: "rgba(255, 60, 47, 0.1)",
+            border: "1px solid rgba(255, 60, 47, 0.3)",
+          }}
+        >
+          <p style={{ color: "var(--accent)" }}>
+            ⚠️ Error loading dashboard: {error}
+          </p>
+          <p
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "12px",
+              marginTop: "4px",
+            }}
+          >
+            Check your connection and try refreshing the page
+          </p>
+        </motion.div>
+      )}
       {/* Welcome */}
       <div className="mb-8">
         <motion.p
@@ -182,7 +188,7 @@ export default function TrainerDashboard() {
           <>
             <StatCard
               label="Total Members"
-              value={s.totalMembers}
+              value={stats.totalMembers}
               sub="+3 this week"
               icon={Users}
               accent
@@ -190,21 +196,21 @@ export default function TrainerDashboard() {
             />
             <StatCard
               label="Active Plans"
-              value={s.activePlans}
+              value={stats.activePlans}
               sub="Workout + Diet"
               icon={Dumbbell}
               index={1}
             />
             <StatCard
               label="Avg Progress"
-              value={`${s.avgProgress}%`}
+              value={`${stats.avgProgress}%`}
               sub="Across all members"
               icon={TrendingUp}
               index={2}
             />
             <StatCard
               label="Broadcasts Sent"
-              value={s.broadcastsSent}
+              value={stats.broadcastsSent}
               sub="This month"
               icon={Send}
               index={3}
@@ -240,7 +246,9 @@ export default function TrainerDashboard() {
             <Activity size={18} style={{ color: "var(--accent)" }} />
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={mockActivity}>
+            <AreaChart
+              data={activityData && activityData.length > 0 ? activityData : []}
+            >
               <defs>
                 <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#FF3C2F" stopOpacity={0.3} />
@@ -347,7 +355,7 @@ export default function TrainerDashboard() {
             View All →
           </Link>
         </div>
-        <div>
+        {/* <div>
           {mockMembers.map((m, i) => (
             <Link
               key={m._id}
@@ -406,7 +414,7 @@ export default function TrainerDashboard() {
               </div>
             </Link>
           ))}
-        </div>
+        </div> */}
       </motion.div>
     </PageWrapper>
   );

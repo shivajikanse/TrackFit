@@ -11,30 +11,6 @@ import {
   Badge,
 } from "../../components/ui";
 
-const mockSent = [
-  {
-    _id: "1",
-    type: "broadcast",
-    message: "Gym closed Saturday — double session Friday!",
-    sentAt: "2025-04-25T09:00:00",
-    readCount: 18,
-  },
-  {
-    _id: "2",
-    type: "selected",
-    message: "Alex, Sarah — new leg day routine uploaded. Check it out!",
-    sentAt: "2025-04-23T14:30:00",
-    readCount: 2,
-  },
-  {
-    _id: "3",
-    type: "broadcast",
-    message: "New AI diet plans are live. Check your diet section!",
-    sentAt: "2025-04-20T11:00:00",
-    readCount: 21,
-  },
-];
-
 export default function Broadcast() {
   const [members, setMembers] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -45,37 +21,37 @@ export default function Broadcast() {
   const [copied, setCopied] = useState(false);
   const { user } = useAuthStore();
 
+  // Fetch members and messages once on mount
   useEffect(() => {
-    trainerService
-      .getMembers()
-      .then(({ data }) => {
-        const membersList = Array.isArray(data?.data)
-          ? data.data
-          : Array.isArray(data)
-            ? data
-            : [];
-        setMembers(membersList);
-      })
-      .catch(() =>
-        setMembers([
-          { _id: "1", name: "Alex Johnson" },
-          { _id: "2", name: "Sarah Chen" },
-          { _id: "3", name: "Marcus Davis" },
-          { _id: "4", name: "Emma Wilson" },
-        ]),
-      );
+    const fetchData = async () => {
+      try {
+        const [membersResponse, messagesResponse] = await Promise.all([
+          trainerService.getMembers(),
+          trainerService.getSentMessages(),
+        ]);
 
-    trainerService
-      .getSentMessages()
-      .then(({ data }) => {
-        const messagesList = Array.isArray(data?.data)
-          ? data.data
-          : Array.isArray(data?.messages)
-            ? data.messages
-            : [];
-        setSentMessages(messagesList);
-      })
-      .catch(() => setSentMessages(mockSent));
+        // Handle members
+        const membersData = membersResponse?.data;
+        if (membersData?.success && Array.isArray(membersData?.data)) {
+          setMembers(membersData.data);
+        }
+
+        // Handle messages
+        const messagesData = messagesResponse?.data;
+        if (messagesData?.success) {
+          const messagesList = Array.isArray(messagesData?.data)
+            ? messagesData.data
+            : Array.isArray(messagesData?.messages)
+              ? messagesData.messages
+              : [];
+          setSentMessages(messagesList);
+        }
+      } catch (error) {
+        console.error("[Broadcast] Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const toggleMember = (id) =>

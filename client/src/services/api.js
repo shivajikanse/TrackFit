@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:5000/api",
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
 });
@@ -43,9 +43,7 @@ api.interceptors.response.use(
     console.log("📡 API Response Error:", { status, url: error.config?.url });
 
     if (status === 401) {
-      console.log(
-        " 401 Unauthorized - clearing auth and redirecting to login",
-      );
+      console.log(" 401 Unauthorized - clearing auth and redirecting to login");
       localStorage.removeItem("trackfit-auth");
       // Only redirect if not already on login page to prevent loops
       if (window.location.pathname !== "/login") {

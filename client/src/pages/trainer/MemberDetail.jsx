@@ -14,37 +14,44 @@ import {
   Tooltip,
 } from "recharts";
 
-const mockMember = {
-  _id: "1",
-  name: "Alex Johnson",
-  email: "alex@gym.com",
-  goal: "Weight Loss",
-  status: "active",
-  joinedAt: "2025-01-10",
-  stats: { weight: 85, height: 178, age: 28, progress: 82 },
-  weeklyProgress: [
-    { week: "W1", weight: 88 },
-    { week: "W2", weight: 87 },
-    { week: "W3", weight: 86.5 },
-    { week: "W4", weight: 85.2 },
-  ],
-};
-
 export default function MemberDetail() {
   const { id } = useParams();
   const [member, setMember] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch member details only when component mounts
   useEffect(() => {
-    trainerService
-      .getMember(id)
-      .then(({ data }) => {
-        // Backend returns: { success, message, data: { member, activeWorkout, activeDiet, recentProgress } }
-        const memberData = data?.data?.member || data?.member || data;
-        setMember(memberData);
-      })
-      .catch(() => setMember(mockMember))
-      .finally(() => setLoading(false));
+    if (!id) {
+      setError("Invalid member ID");
+      setLoading(false);
+      return;
+    }
+
+    const fetchMember = async () => {
+      try {
+        const response = await trainerService.getMember(id);
+        const responseData = response?.data;
+
+        if (responseData?.success) {
+          const memberData = responseData.data?.member || responseData.data;
+          setMember(memberData);
+          setError(null);
+        } else {
+          setMember(null);
+          setError(responseData?.message || "Failed to load member");
+        }
+      } catch (err) {
+        setMember(null);
+        setError(
+          err?.response?.data?.message || "Failed to load member details",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMember();
   }, [id]);
 
   if (loading)
@@ -56,6 +63,27 @@ export default function MemberDetail() {
             .map((_, i) => (
               <SkeletonCard key={i} height="h-24" />
             ))}
+        </div>
+      </PageWrapper>
+    );
+
+  if (error)
+    return (
+      <PageWrapper>
+        <div
+          className="p-6 rounded text-center"
+          style={{
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgb(239, 68, 68)",
+          }}
+        >
+          <p className="text-red-400 font-medium mb-3">{error}</p>
+          <Link
+            to="/trainer/members"
+            className="text-sm text-red-400 hover:text-red-300 transition-colors"
+          >
+            ← Back to Members
+          </Link>
         </div>
       </PageWrapper>
     );

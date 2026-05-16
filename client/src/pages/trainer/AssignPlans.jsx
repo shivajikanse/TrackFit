@@ -43,6 +43,7 @@ export default function AssignPlans() {
     meals: [{ name: "Breakfast", items: ["Oats with milk", "Banana"] }],
   });
 
+  // Fetch members on mount
   useEffect(() => {
     trainerService
       .getMembers()
@@ -57,11 +58,7 @@ export default function AssignPlans() {
       })
       .catch((err) => {
         console.error("Failed to fetch members:", err);
-        setMembers([
-          { _id: "1", name: "Alex Johnson" },
-          { _id: "2", name: "Sarah Chen" },
-          { _id: "3", name: "Marcus Davis" },
-        ]);
+        toast.error("Failed to load members");
       });
   }, []);
 

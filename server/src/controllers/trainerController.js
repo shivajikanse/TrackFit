@@ -116,10 +116,30 @@ exports.getMemberDetails = async (req, res) => {
       Progress.find({ member: memberId }).sort({ date: -1 }).limit(7),
     ]);
 
+    // Transform member data to include stats and other required fields
+    const memberData = member.toObject();
+    memberData.stats = {
+      age: member.profile?.age || 0,
+      weight: member.profile?.weight || 0,
+      height: member.profile?.height || 0,
+      progress: 0, // Calculate from progress data
+    };
+    memberData.goal = member.profile?.fitnessGoal || "general_fitness";
+    memberData.status = member.isActive ? "active" : "inactive";
+    memberData.joinedAt = member.createdAt;
+
+    // Calculate progress percentage from recent progress
+    if (recentProgress && recentProgress.length > 0) {
+      const avgProgress =
+        recentProgress.reduce((sum, p) => sum + (p.dietAdherence || 0), 0) /
+        recentProgress.length;
+      memberData.stats.progress = Math.round(avgProgress);
+    }
+
     successResponse(
       res,
       {
-        member,
+        member: memberData,
         activeWorkout,
         activeDiet,
         recentProgress,
@@ -264,6 +284,37 @@ exports.getDashboard = async (req, res) => {
       DietPlan.countDocuments({ assignedBy: req.user._id, isActive: true }),
     ]);
 
+    // Calculate average progress from member progress logs
+    const memberIds = await User.find({
+      trainer: req.user._id,
+      role: "member",
+      isActive: true,
+    }).select("_id");
+
+    let avgProgress = 0;
+    if (memberIds.length > 0) {
+      const memberIdArray = memberIds.map((m) => m._id);
+
+      // Get average of recent progress entries (last 30 days)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const progressData = await Progress.find({
+        member: { $in: memberIdArray },
+        createdAt: { $gte: thirtyDaysAgo },
+      });
+
+      if (progressData.length > 0) {
+        const validProgress = progressData.filter(
+          (p) => p.dietAdherence !== null && p.dietAdherence !== undefined,
+        );
+        if (validProgress.length > 0) {
+          avgProgress = Math.round(
+            validProgress.reduce((sum, p) => sum + (p.dietAdherence || 0), 0) /
+              validProgress.length,
+          );
+        }
+      }
+    }
+
     const recentMembers = await User.find({
       trainer: req.user._id,
       role: "member",
@@ -275,7 +326,13 @@ exports.getDashboard = async (req, res) => {
     successResponse(
       res,
       {
-        stats: { totalMembers, activeWorkouts, activeDiets },
+        stats: {
+          totalMembers,
+          activeWorkouts,
+          activeDiets,
+          avgProgress,
+          broadcastsSent: 0, // TODO: Add broadcast count calculation
+        },
         recentMembers,
       },
       "Dashboard data fetched.",
