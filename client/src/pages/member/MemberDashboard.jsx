@@ -11,7 +11,7 @@ import {
   Target,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { progressService, memberService } from "../../services";
+import { progressService, workoutService, dietService } from "../../services";
 import {
   StatCard,
   PageWrapper,
@@ -20,52 +20,97 @@ import {
 } from "../../components/ui";
 import { useAuthStore } from "../../store";
 
-const mockProgress = [
-  { date: "Apr 20", weight: 88 },
-  { date: "Apr 21", weight: 87.5 },
-  { date: "Apr 22", weight: 87.2 },
-  { date: "Apr 23", weight: 87 },
-  { date: "Apr 24", weight: 86.8 },
-  { date: "Apr 25", weight: 86.2 },
-  { date: "Apr 26", weight: 86 },
-];
-const mockTodayPlan = [
-  { name: "Bench Press", sets: 4, reps: 8, done: true },
-  { name: "Pull-ups", sets: 3, reps: 10, done: true },
-  { name: "Shoulder Press", sets: 3, reps: 12, done: false },
-  { name: "Bicep Curls", sets: 3, reps: 15, done: false },
-];
-
 export default function MemberDashboard() {
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
+  const [todayExercises, setTodayExercises] = useState([]);
+  const [planStats, setPlanStats] = useState({
+    workoutExercises: 0,
+    dietCalories: "—",
+    aiFeedback: "New insights available",
+  });
   const { user } = useAuthStore();
 
   useEffect(() => {
-    progressService
-      .getAnalytics()
-      .then(({ data }) => {
-        // Backend returns: { success, message, data: {...analytics...} }
-        const analyticsData = data?.data || data;
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch analytics (includes progress history and stats)
+        const analyticsRes = await progressService.getAnalytics();
+        const analyticsData = analyticsRes?.data?.data || analyticsRes?.data;
         setAnalytics(analyticsData);
-      })
-      .catch(() =>
+
+        // Fetch workout plan for today
+        try {
+          const workoutRes = await workoutService.getMyPlan();
+          const workoutPlan = workoutRes?.data?.data || workoutRes?.data;
+          if (workoutPlan) {
+            const exercises =
+              workoutPlan.schedule?.flatMap((day) => day.exercises || []) ||
+              workoutPlan.exercises ||
+              [];
+            setTodayExercises(exercises.slice(0, 4));
+            setPlanStats((p) => ({
+              ...p,
+              workoutExercises: exercises.length,
+            }));
+          }
+        } catch (error) {
+          // 404 is OK - user might not have a workout plan yet
+          console.log("No workout plan:", error.response?.status);
+        }
+
+        // Fetch diet plan
+        try {
+          const dietRes = await dietService.getMyPlan();
+          const dietPlan = dietRes?.data?.data || dietRes?.data;
+          if (dietPlan) {
+            setPlanStats((p) => ({
+              ...p,
+              dietCalories: `${dietPlan.targetCalories || 2400} kcal target`,
+            }));
+          }
+        } catch (error) {
+          // 404 is OK - user might not have a diet plan yet
+          console.log("No diet plan:", error.response?.status);
+        }
+      } catch (error) {
+        console.log("Dashboard data load error:", error.message);
         setAnalytics({
-          streak: 12,
-          caloriesBurned: 3840,
-          workoutsCompleted: 18,
-          goalProgress: 68,
-        }),
-      )
-      .finally(() => setLoading(false));
+          totalLogs: 0,
+          workoutCompletionRate: 0,
+          weightHistory: [],
+          avgCaloriesConsumed: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
-  const stats = analytics || {
-    streak: 12,
-    caloriesBurned: 3840,
-    workoutsCompleted: 18,
-    goalProgress: 68,
+  const stats = {
+    streak: analytics?.totalLogs || 0,
+    caloriesBurned: Math.round(analytics?.avgCaloriesConsumed || 0),
+    workoutsCompleted: Math.round(analytics?.workoutCompletionRate || 0),
+    goalProgress: analytics?.weightChange
+      ? Math.abs(parseFloat(analytics.weightChange)) > 0.5
+        ? 50 + Math.min(50, Math.round(parseFloat(analytics.weightChange) * 10))
+        : 50
+      : 0,
   };
+
+  const chartData = analytics?.weightHistory
+    ? analytics.weightHistory.slice(-7).map((entry) => ({
+        date: new Date(entry.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        weight: entry.weight,
+      }))
+    : [{ date: "No data", weight: 0 }];
 
   return (
     <PageWrapper>
@@ -163,7 +208,7 @@ export default function MemberDashboard() {
             </Link>
           </div>
           <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={mockProgress}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#39FF14" stopOpacity={0.2} />
@@ -213,19 +258,22 @@ export default function MemberDashboard() {
               to: "/member/workout",
               icon: Dumbbell,
               label: "Today's Workout",
-              sub: "4 exercises ready",
+              sub:
+                planStats.workoutExercises > 0
+                  ? `${planStats.workoutExercises} exercises ready`
+                  : "No workout assigned",
             },
             {
               to: "/member/diet",
               icon: Apple,
               label: "My Diet Plan",
-              sub: "2,400 kcal target",
+              sub: planStats.dietCalories,
             },
             {
               to: "/member/ai-feedback",
               icon: Zap,
               label: "AI Feedback",
-              sub: "New insights available",
+              sub: planStats.aiFeedback,
             },
           ].map(({ to, icon: Icon, label, sub }) => (
             <Link
@@ -293,50 +341,65 @@ export default function MemberDashboard() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {mockTodayPlan.map((ex, i) => (
-            <motion.div
-              key={ex.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.55 + i * 0.06 }}
-              className="p-4 rounded relative overflow-hidden"
+          {todayExercises.length > 0 ? (
+            todayExercises.map((ex, i) => (
+              <motion.div
+                key={ex.name || i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.55 + i * 0.06 }}
+                className="p-4 rounded relative overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <Dumbbell
+                    size={14}
+                    style={{
+                      color: "var(--text-secondary)",
+                    }}
+                  />
+                  <Badge variant="default">Pending</Badge>
+                </div>
+                <p className="font-heading text-sm font-semibold text-white uppercase">
+                  {ex.name}
+                </p>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {ex.sets} × {ex.reps} reps
+                </p>
+              </motion.div>
+            ))
+          ) : (
+            <div
+              className="col-span-full p-8 rounded text-center"
               style={{
-                background: ex.done
-                  ? "rgba(57,255,20,0.05)"
-                  : "rgba(255,255,255,0.03)",
-                border: ex.done
-                  ? "1px solid rgba(57,255,20,0.15)"
-                  : "1px solid rgba(255,255,255,0.05)",
+                background: "rgba(255,60,47,0.05)",
+                border: "1px solid rgba(255,60,47,0.15)",
               }}
             >
-              {ex.done && (
-                <div
-                  className="absolute top-0 left-0 right-0 h-0.5"
-                  style={{ background: "var(--success)" }}
-                />
-              )}
-              <div className="flex items-center justify-between mb-2">
-                <Dumbbell
-                  size={14}
-                  style={{
-                    color: ex.done ? "var(--success)" : "var(--text-secondary)",
-                  }}
-                />
-                <Badge variant={ex.done ? "success" : "default"}>
-                  {ex.done ? "Done" : "Pending"}
-                </Badge>
-              </div>
-              <p className="font-heading text-sm font-semibold text-white uppercase">
-                {ex.name}
+              <Dumbbell
+                size={32}
+                style={{
+                  color: "var(--text-secondary)",
+                  margin: "0 auto 12px",
+                }}
+              />
+              <p className="text-sm text-white font-medium">
+                No workout assigned yet
               </p>
               <p
                 className="text-xs mt-1"
                 style={{ color: "var(--text-secondary)" }}
               >
-                {ex.sets} × {ex.reps} reps
+                Your trainer will assign a workout plan soon
               </p>
-            </motion.div>
-          ))}
+            </div>
+          )}
         </div>
       </motion.div>
     </PageWrapper>

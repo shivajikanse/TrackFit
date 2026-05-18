@@ -26,43 +26,6 @@ import {
   Modal,
 } from "../../components/ui";
 
-const mockAnalytics = {
-  streak: 12,
-  totalWorkouts: 38,
-  caloriesBurned: 14200,
-  weightLost: 3.8,
-};
-
-const mockWeightHistory = [
-  { date: "Apr 1", weight: 89.5 },
-  { date: "Apr 5", weight: 88.8 },
-  { date: "Apr 8", weight: 88.2 },
-  { date: "Apr 12", weight: 87.9 },
-  { date: "Apr 15", weight: 87.4 },
-  { date: "Apr 19", weight: 86.8 },
-  { date: "Apr 22", weight: 86.2 },
-  { date: "Apr 26", weight: 85.7 },
-];
-
-const mockCaloriesHistory = [
-  { date: "Mon", burned: 480, intake: 2380 },
-  { date: "Tue", burned: 620, intake: 2410 },
-  { date: "Wed", burned: 0, intake: 2200 },
-  { date: "Thu", burned: 580, intake: 2450 },
-  { date: "Fri", burned: 710, intake: 2380 },
-  { date: "Sat", burned: 820, intake: 2500 },
-  { date: "Sun", burned: 0, intake: 2100 },
-];
-
-const mockWorkoutHistory = [
-  { week: "Wk 1", sessions: 4 },
-  { week: "Wk 2", sessions: 5 },
-  { week: "Wk 3", sessions: 3 },
-  { week: "Wk 4", sessions: 6 },
-  { week: "Wk 5", sessions: 5 },
-  { week: "Wk 6", sessions: 7 },
-];
-
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -90,6 +53,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Progress() {
   const [analytics, setAnalytics] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [logModal, setLogModal] = useState(false);
   const [logForm, setLogForm] = useState({
@@ -102,15 +66,33 @@ export default function Progress() {
   const [activeChart, setActiveChart] = useState("weight");
 
   useEffect(() => {
-    progressService
-      .getAnalytics()
-      .then(({ data }) => {
-        // Backend returns: { success, message, data: {...analytics...} }
-        const analyticsData = data?.data || data;
+    const fetchProgressData = async () => {
+      try {
+        setLoading(true);
+        const analyticsRes = await progressService.getAnalytics();
+        const analyticsData = analyticsRes?.data?.data || analyticsRes?.data;
         setAnalytics(analyticsData);
-      })
-      .catch(() => setAnalytics(mockAnalytics))
-      .finally(() => setLoading(false));
+
+        const historyRes = await progressService.getHistory();
+        const historyData = historyRes?.data?.data || historyRes?.data;
+        if (Array.isArray(historyData)) {
+          setHistory(historyData);
+        }
+      } catch (error) {
+        console.log("Progress load error:", error.message);
+        setAnalytics({
+          totalLogs: 0,
+          workoutCompletionRate: 0,
+          weightHistory: [],
+          avgCaloriesConsumed: 0,
+          weightChange: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgressData();
   }, []);
 
   const handleLog = async (e) => {
@@ -134,8 +116,6 @@ export default function Progress() {
     }
   };
 
-  const s = analytics || mockAnalytics;
-
   return (
     <PageWrapper>
       <SectionHeader
@@ -155,28 +135,27 @@ export default function Progress() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
-          label="Day Streak"
-          value={`${s.streak}🔥`}
+          label="Total Logs"
+          value={`${analytics?.totalLogs || 0}📊`}
           icon={Flame}
-          accent
           index={0}
         />
         <StatCard
-          label="Workouts Done"
-          value={s.totalWorkouts}
+          label="Workout Completion"
+          value={`${Math.round(analytics?.workoutCompletionRate || 0)}%`}
           icon={Dumbbell}
           index={1}
         />
         <StatCard
-          label="Calories Burned"
-          value={`${(s.caloriesBurned / 1000).toFixed(1)}k`}
-          sub="Total"
+          label="Avg Calories"
+          value={`${Math.round(analytics?.avgCaloriesConsumed || 0)}`}
+          sub="Per log"
           icon={Flame}
           index={2}
         />
         <StatCard
-          label="Weight Lost"
-          value={`${s.weightLost}kg`}
+          label="Weight Change"
+          value={`${analytics?.weightChange || 0}kg`}
           icon={TrendingDown}
           index={3}
         />
@@ -235,19 +214,33 @@ export default function Progress() {
                   Weight (kg)
                 </p>
                 <p className="font-display text-4xl text-white">
-                  {mockWeightHistory[mockWeightHistory.length - 1].weight}
-                  <span
-                    className="text-lg ml-2"
-                    style={{ color: "var(--success)" }}
-                  >
-                    ↓ {s.weightLost}kg total
-                  </span>
+                  {analytics?.weightHistory?.length > 0
+                    ? analytics.weightHistory[
+                        analytics.weightHistory.length - 1
+                      ].weight
+                    : "—"}
+                  {analytics?.weightChange && (
+                    <span
+                      className="text-lg ml-2"
+                      style={{ color: "var(--success)" }}
+                    >
+                      ↓ {analytics.weightChange}kg total
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart
-                data={mockWeightHistory}
+                data={
+                  analytics?.weightHistory?.map((w) => ({
+                    date: new Date(w.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    }),
+                    weight: w.weight,
+                  })) || [{ date: "No data", weight: 0 }]
+                }
                 margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
               >
                 <defs>
@@ -298,7 +291,15 @@ export default function Progress() {
             </p>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
-                data={mockCaloriesHistory}
+                data={
+                  history.slice(-7).map((entry, idx) => ({
+                    date: new Date(entry.date).toLocaleDateString("en-US", {
+                      weekday: "short",
+                    }),
+                    intake: entry.caloriesConsumed || 0,
+                    burned: Math.round((entry.caloriesConsumed || 0) * 0.2), // Approximate
+                  })) || [{ date: "No data", intake: 0, burned: 0 }]
+                }
                 margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
               >
                 <CartesianGrid
@@ -351,7 +352,12 @@ export default function Progress() {
             </p>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart
-                data={mockWorkoutHistory}
+                data={
+                  history.slice(-7).map((entry, idx) => ({
+                    week: `Wk ${idx + 1}`,
+                    sessions: entry.workoutCompleted ? 1 : 0,
+                  })) || [{ week: "No data", sessions: 0 }]
+                }
                 margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
               >
                 <CartesianGrid
@@ -375,11 +381,7 @@ export default function Progress() {
                   name="Sessions"
                   fill="var(--accent)"
                   radius={[4, 4, 0, 0]}
-                >
-                  {mockWorkoutHistory.map((entry, i) => (
-                    <rect key={i} />
-                  ))}
-                </Bar>
+                />
               </BarChart>
             </ResponsiveContainer>
           </>

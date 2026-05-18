@@ -311,13 +311,28 @@ export default function MyDiet() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Flatten meals from schedule structure or use flat meals array
+  const getMeals = () => {
+    if (plan?.meals) return plan.meals;
+    if (plan?.schedule?.length > 0) {
+      return plan.schedule.flatMap((day) => day.meals || []);
+    }
+    if (mockDiet?.meals) return mockDiet.meals;
+    return [];
+  };
+  const meals = getMeals();
+
   const p = plan || mockDiet;
 
   return (
     <PageWrapper>
       <SectionHeader
         title="My Diet Plan"
-        sub={plan ? `${plan.title} • Assigned by ${plan.assignedBy}` : ""}
+        sub={
+          plan
+            ? `${plan.title} • Assigned by ${typeof plan.assignedBy === "object" ? plan.assignedBy.name : plan.assignedBy}`
+            : ""
+        }
       />
 
       {loading ? (
@@ -514,10 +529,10 @@ export default function MyDiet() {
               className="font-heading text-xs tracking-widest uppercase mb-4"
               style={{ color: "var(--text-secondary)" }}
             >
-              Meal Breakdown — {p.meals?.length} meals today
+              Meal Breakdown — {meals.length} meals today
             </p>
             <div className="space-y-3">
-              {p.meals?.map((meal, i) => (
+              {meals.map((meal, i) => (
                 <MealCard key={i} meal={meal} index={i} />
               ))}
             </div>

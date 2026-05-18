@@ -75,9 +75,19 @@ export default function MyWorkout() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Flatten exercises from schedule structure or use flat exercises array
+  const getExercises = () => {
+    if (plan?.exercises) return plan.exercises;
+    if (plan?.schedule?.length > 0) {
+      return plan.schedule.flatMap((day) => day.exercises || []);
+    }
+    return [];
+  };
+  const exercises = getExercises();
+
   const toggleDone = (i) => setDone((d) => ({ ...d, [i]: !d[i] }));
   const doneCount = Object.values(done).filter(Boolean).length;
-  const totalCount = plan?.exercises?.length || 0;
+  const totalCount = exercises.length;
 
   return (
     <PageWrapper>
@@ -191,14 +201,17 @@ export default function MyWorkout() {
                   border: "1px solid rgba(255,255,255,0.06)",
                 }}
               >
-                By {plan.assignedBy}
+                By{" "}
+                {typeof plan.assignedBy === "object"
+                  ? plan.assignedBy.name
+                  : plan.assignedBy}
               </div>
             )}
           </div>
 
           {/* Exercises */}
           <div className="space-y-4">
-            {plan.exercises.map((ex, i) => (
+            {exercises.map((ex, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
