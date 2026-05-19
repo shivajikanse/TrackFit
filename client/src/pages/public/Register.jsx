@@ -19,13 +19,7 @@ export default function Register() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
-  // DEBUG: Log when Register component mounts
-  console.log("📝 Register Component Mounted");
-  console.log("🔍 Current Auth State:", useAuthStore.getState());
-
-  useEffect(() => {
-    console.log("✅ Register component actually rendered to DOM");
-  }, []);
+  useEffect(() => {}, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -40,33 +34,21 @@ export default function Register() {
 
     setLoading(true);
     try {
-      console.log("📤 Sending register request:", form);
       const response = await authService.register(form);
-      console.log("📥 Full Axios Response:", response);
-
-      // Extract from nested data structure
       const { data: apiData } = response;
       const user = apiData.data?.user;
-      // Server returns accessToken, not token
       const token = apiData.data?.accessToken;
 
-      console.log("📥 Extracted user:", user);
-      console.log("📥 Extracted token:", token);
-
       if (!user || !token) {
-        console.error("❌ Response missing user or token!", { user, token });
         toast.error("Registration failed: Invalid server response");
         setLoading(false);
         return;
       }
 
       setAuth(user, token);
-      console.log("✅ setAuth called, auth store updated");
-      console.log("✅ Current store state:", useAuthStore.getState());
       toast.success("Welcome to TrackFit!");
       navigate(user.role === "trainer" ? "/trainer" : "/member");
     } catch (err) {
-      console.error("❌ Register error:", err);
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);

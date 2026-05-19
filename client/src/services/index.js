@@ -50,7 +50,6 @@ export const progressService = {
 
 // ── MEMBER ────────────────────────────────────────────
 export const memberService = {
-  getAiFeedback: () => api.get("/member/ai-feedback"),
   getInbox: () => api.get("/messages/inbox"),
   getNotes: () => api.get("/member/notes"),
   createNote: (data) => api.post("/member/notes", data),

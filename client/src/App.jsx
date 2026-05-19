@@ -20,7 +20,6 @@ import Profile from "./pages/member/Profile";
 import MyWorkout from "./pages/member/MyWorkout";
 import MyDiet from "./pages/member/MyDiet";
 import Progress from "./pages/member/Progress";
-import AiFeedback from "./pages/member/AiFeedback";
 import Notes from "./pages/member/Notes";
 import Inbox from "./pages/member/Inbox";
 
@@ -105,7 +104,6 @@ export default function App() {
         <Route path="workout" element={<MyWorkout />} />
         <Route path="diet" element={<MyDiet />} />
         <Route path="progress" element={<Progress />} />
-        <Route path="ai-feedback" element={<AiFeedback />} />
         <Route path="notes" element={<Notes />} />
         <Route path="inbox" element={<Inbox />} />
       </Route>

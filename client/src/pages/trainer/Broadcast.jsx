@@ -47,7 +47,7 @@ export default function Broadcast() {
           setSentMessages(messagesList);
         }
       } catch (error) {
-        console.error("[Broadcast] Error fetching data:", error);
+        // Error handled silently
       }
     };
 

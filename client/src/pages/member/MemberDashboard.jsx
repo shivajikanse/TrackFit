@@ -58,7 +58,6 @@ export default function MemberDashboard() {
           }
         } catch (error) {
           // 404 is OK - user might not have a workout plan yet
-          console.log("No workout plan:", error.response?.status);
         }
 
         // Fetch diet plan
@@ -73,10 +72,8 @@ export default function MemberDashboard() {
           }
         } catch (error) {
           // 404 is OK - user might not have a diet plan yet
-          console.log("No diet plan:", error.response?.status);
         }
       } catch (error) {
-        console.log("Dashboard data load error:", error.message);
         setAnalytics({
           totalLogs: 0,
           workoutCompletionRate: 0,

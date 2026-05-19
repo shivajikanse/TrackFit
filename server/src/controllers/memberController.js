@@ -84,23 +84,25 @@ exports.updateMemberProfile = async (req, res) => {
       return errorResponse(res, "Allergies must be an array", 400);
     }
 
-    // Update profile
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        profile: {
-          age: age || undefined,
-          gender: gender || undefined,
-          height: height || undefined,
-          weight: weight || undefined,
-          fitnessGoal: fitnessGoal || undefined,
-          activityLevel: activityLevel || undefined,
-          medicalConditions: medicalConditions || [],
-          allergies: allergies || [],
-        },
-      },
-      { new: true, runValidators: true },
-    ).select("-password -refreshToken");
+    // Build update object with only provided fields
+    const updateFields = {};
+    if (age !== undefined) updateFields["profile.age"] = age;
+    if (gender !== undefined) updateFields["profile.gender"] = gender;
+    if (height !== undefined) updateFields["profile.height"] = height;
+    if (weight !== undefined) updateFields["profile.weight"] = weight;
+    if (fitnessGoal !== undefined)
+      updateFields["profile.fitnessGoal"] = fitnessGoal;
+    if (activityLevel !== undefined)
+      updateFields["profile.activityLevel"] = activityLevel;
+    if (medicalConditions !== undefined)
+      updateFields["profile.medicalConditions"] = medicalConditions;
+    if (allergies !== undefined) updateFields["profile.allergies"] = allergies;
+
+    // Update only provided profile fields (preserves existing fields not in update)
+    const user = await User.findByIdAndUpdate(req.user._id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).select("-password -refreshToken");
 
     successResponse(res, user, "Profile updated successfully");
   } catch (error) {

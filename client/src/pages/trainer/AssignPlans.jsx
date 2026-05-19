@@ -57,7 +57,6 @@ export default function AssignPlans() {
         setMembers(membersList);
       })
       .catch((err) => {
-        console.error("Failed to fetch members:", err);
         toast.error("Failed to load members");
       });
   }, []);

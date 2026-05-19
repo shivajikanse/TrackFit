@@ -33,7 +33,7 @@ const memberNav = [
   { to: "/member/workout", label: "My Workout", icon: Dumbbell },
   { to: "/member/diet", label: "My Diet", icon: Apple },
   { to: "/member/progress", label: "Progress", icon: TrendingUp },
-  { to: "/member/ai-feedback", label: "AI Feedback", icon: Zap },
+
   { to: "/member/notes", label: "My Notes", icon: StickyNote },
   { to: "/member/inbox", label: "Inbox", icon: Inbox },
 ];

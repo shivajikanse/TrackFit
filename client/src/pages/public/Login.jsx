@@ -14,13 +14,7 @@ export default function Login() {
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
-  // DEBUG: Log when Login component mounts
-  console.log("📝 Login Component Mounted");
-  console.log("🔍 Current Auth State:", useAuthStore.getState());
-
-  useEffect(() => {
-    console.log("✅ Login component actually rendered to DOM");
-  }, []);
+  useEffect(() => {}, []);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -28,44 +22,21 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      console.log("📤 Sending login request:", form);
       const response = await authService.login(form);
-      console.log("📥 Full Axios Response:", response);
-      console.log("📥 response.data:", response.data);
-      console.log("📥 response.data.data:", response.data.data);
-      console.log("📥 All keys in response.data:", Object.keys(response.data));
-      console.log(
-        "📥 All keys in response.data.data:",
-        Object.keys(response.data.data || {}),
-      );
-
-      // Extract from nested data structure
       const { data: apiData } = response;
       const user = apiData.data?.user;
-      // Server returns accessToken, not token
       const token = apiData.data?.accessToken;
 
-      console.log("📥 Extracted user:", user);
-      console.log("📥 Extracted token:", token);
-
       if (!user || !token) {
-        console.error("❌ Response missing user or token!", { user, token });
-        console.log(
-          "📋 Full API response for debugging:",
-          JSON.stringify(apiData, null, 2),
-        );
         toast.error("Login failed: Invalid server response");
         setLoading(false);
         return;
       }
 
       setAuth(user, token);
-      console.log("✅ setAuth called, auth store updated");
-      console.log("✅ Current store state:", useAuthStore.getState());
       toast.success(`Welcome back, ${user.name || user.email}!`);
       navigate(user.role === "trainer" ? "/trainer" : "/member");
     } catch (err) {
-      console.error("❌ Login error:", err);
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);

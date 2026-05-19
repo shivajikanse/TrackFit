@@ -105,7 +105,7 @@ export default function ProfileForm({
     try {
       await onSubmit(dataToSend);
     } catch (error) {
-      console.error("Form submission error:", error);
+      // Error handled in parent component
     }
   };
 

@@ -1,6 +1,5 @@
 const router = require("express").Router();
 const { protect } = require("../middleware/auth");
-const { getAIFeedback } = require("../controllers/progressController");
 const {
   createNote,
   getNotes,
@@ -21,9 +20,6 @@ router.get("/profile", protect, getMemberProfile);
 router.put("/profile", protect, updateMemberProfile);
 router.get("/profile/:memberId", protect, getMemberById);
 router.get("/profile-ai/:memberId", protect, getMemberProfileForAI);
-
-// AI Feedback
-router.get("/ai-feedback", protect, getAIFeedback);
 
 // Notes
 router.post("/notes", protect, createNote);
