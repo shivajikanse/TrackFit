@@ -16,6 +16,7 @@ import Broadcast from "./pages/trainer/Broadcast";
 
 // Member pages
 import MemberDashboard from "./pages/member/MemberDashboard";
+import Profile from "./pages/member/Profile";
 import MyWorkout from "./pages/member/MyWorkout";
 import MyDiet from "./pages/member/MyDiet";
 import Progress from "./pages/member/Progress";
@@ -100,6 +101,7 @@ export default function App() {
         }
       >
         <Route index element={<MemberDashboard />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="workout" element={<MyWorkout />} />
         <Route path="diet" element={<MyDiet />} />
         <Route path="progress" element={<Progress />} />

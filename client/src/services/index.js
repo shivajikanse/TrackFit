@@ -56,4 +56,10 @@ export const memberService = {
   createNote: (data) => api.post("/member/notes", data),
   updateNote: (id, data) => api.put(`/member/notes/${id}`, data),
   deleteNote: (id) => api.delete(`/member/notes/${id}`),
+  // Profile endpoints
+  getProfile: () => api.get("/member/profile"),
+  updateProfile: (data) => api.put("/member/profile", data),
+  getMemberProfile: (memberId) => api.get(`/member/profile/${memberId}`),
+  getMemberProfileForAI: (memberId) =>
+    api.get(`/member/profile-ai/${memberId}`),
 };

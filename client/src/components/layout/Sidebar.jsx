@@ -29,6 +29,7 @@ const trainerNav = [
 
 const memberNav = [
   { to: "/member", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/member/profile", label: "Profile", icon: User },
   { to: "/member/workout", label: "My Workout", icon: Dumbbell },
   { to: "/member/diet", label: "My Diet", icon: Apple },
   { to: "/member/progress", label: "Progress", icon: TrendingUp },
