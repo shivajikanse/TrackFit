@@ -74,12 +74,12 @@ export default function Login() {
         />
 
         <Link to="/" className="relative flex items-center gap-2">
-          <div
-            className="w-8 h-8 flex items-center justify-center"
-            style={{ background: "var(--accent)" }}
-          >
-            <Zap size={16} className="text-white" fill="white" />
-          </div>
+          <img
+            src="/Fitness Icon.jfif"
+            alt="TrackFit Logo"
+            className="w-7 h-7 object-contain"
+          />
+
           <span className="font-display text-2xl tracking-widest text-white">
             TRACKFIT
           </span>

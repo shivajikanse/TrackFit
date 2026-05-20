@@ -80,12 +80,11 @@ export default function Sidebar({ role }) {
               exit={{ opacity: 0, x: -10 }}
               className="ml-3 flex items-center gap-2"
             >
-              <div
-                className="w-7 h-7 flex items-center justify-center"
-                style={{ background: "var(--accent)" }}
-              >
-                <Zap size={14} className="text-white" fill="white" />
-              </div>
+              <img
+                src="/Fitness Icon.jfif"
+                alt="TrackFit Logo"
+                className="w-7 h-7 object-contain"
+              />
               <span className="font-display text-xl tracking-widest text-white">
                 TRACKFIT
               </span>
