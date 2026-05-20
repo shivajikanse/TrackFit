@@ -41,9 +41,9 @@ export default function Landing() {
       >
         <div className="flex items-center gap-2">
           <img
-            src="/Fitness Icon.jfif"
+            src="/Fitness Icon.png"
             alt="TrackFit Logo"
-            className="w-7 h-7 object-contain"
+            className="w-15 h-10 object-contain"
           />
           <span className="font-display text-xl tracking-widest text-white">
             TRACKFIT
@@ -113,12 +113,7 @@ export default function Landing() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-          >
-            {/* <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full" style={{ background: 'rgba(255,60,47,0.08)', border: '1px solid rgba(255,60,47,0.2)' }}>
-              <img src="/Fitness Icon.jfif" alt="fitness" className="w-3 h-3 object-contain" />
-              <span className="font-heading text-xs tracking-widest uppercase" style={{ color: 'var(--accent)' }}>AI-Powered Fitness Platform</span>
-            </div> */}
-          </motion.div>
+          ></motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 40 }}

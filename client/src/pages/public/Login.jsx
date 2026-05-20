@@ -75,9 +75,9 @@ export default function Login() {
 
         <Link to="/" className="relative flex items-center gap-2">
           <img
-            src="/Fitness Icon.jfif"
+            src="/Fitness Icon.png"
             alt="TrackFit Logo"
-            className="w-7 h-7 object-contain"
+            className="w-10 h-10 object-contain"
           />
 
           <span className="font-display text-2xl tracking-widest text-white">

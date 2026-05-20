@@ -69,7 +69,7 @@ export default function Register() {
           <img
             src="/Fitness Icon.jfif"
             alt="TrackFit Logo"
-            className="w-7 h-7 object-contain"
+            className="w-10 h-10 object-contain"
           />
           <span className="font-display text-xl tracking-widest text-white">
             TRACKFIT
